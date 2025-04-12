@@ -109,6 +109,7 @@ def train(model, optim, schedulers, loss_fn, train_loader, val_loader, num_epoch
 
 def main():
     device = "mps" if torch.backends.mps.is_available() else "cpu"
+    device = "cuda" if torch.cuda.is_available() else device
     # device = "cpu"
     print(f"Using device: {device}")
 
