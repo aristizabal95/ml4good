@@ -6,7 +6,7 @@ import optuna
 from ml4good.hyperparameters.model import make_net93
 from ml4good.hyperparameters.processing.loader import CifarLoader
 from ml4good.hyperparameters.config.core import config, DATASET_DIR
-from ml4good.hyperparameters.train import train, evaluate
+from ml4good.hyperparameters.train import train
 
 # Initialize wandb for the hyperparameter search
 wandb.init(
@@ -21,7 +21,9 @@ wandb.init(
 
 # 1. Define an objective function to be maximized.
 def objective(trial):
-    device = "mps" if torch.backends.mps.is_available() else "cpu"
+    # Use CUDA if available, otherwise use CPU
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
 
     # 2. Suggest values of the hyperparameters using a trial object.
     block1_width = trial.suggest_int('block1_width', 8, 128)
@@ -56,17 +58,43 @@ def objective(trial):
     wandb.log(trial_params)
 
     model = make_net93(widths, batchnorm_momentum, scaling_factor)
-    train_loader = CifarLoader(DATASET_DIR, train=True, batch_size=batch_size, aug=augmentations, device=device)
-    val_loader = CifarLoader(DATASET_DIR, train=False, batch_size=batch_size, aug=augmentations, device=device)
+    train_loader = CifarLoader(
+        DATASET_DIR, 
+        train=True, 
+        batch_size=batch_size, 
+        aug=augmentations
+    )
+    val_loader = CifarLoader(
+        DATASET_DIR, 
+        train=False, 
+        batch_size=batch_size, 
+        aug=augmentations
+    )
+    
     # Define loss function and optimizer
     loss_fn = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    optimizer = torch.optim.SGD(
+        model.parameters(), 
+        lr=learning_rate, 
+        weight_decay=weight_decay
+    )
     scheduler = ExponentialLR(optimizer, gamma=(1-lr_decay))
     schedulers = [scheduler]
-    # Move model to device
-    model.to(device).half()
+    
+    # Move model and loss function to device
+    model = model.to(device).half()
+    loss_fn = loss_fn.to(device)
 
-    final_val_acc = train(model, optimizer, schedulers, loss_fn, train_loader, val_loader, num_epochs=2)
+    final_val_acc = train(
+        model, 
+        optimizer, 
+        schedulers, 
+        loss_fn, 
+        train_loader, 
+        val_loader, 
+        num_epochs=2,
+        device=device
+    )
     
     # Log trial result to wandb
     wandb.log({

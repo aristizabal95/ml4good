@@ -38,7 +38,7 @@ def evaluate(model, loader, tta_level=0):
     logits = infer(model, loader, tta_level)
     return (logits.argmax(1) == loader.labels).float().mean().item()
 
-def train(model, optim, schedulers, loss_fn, train_loader, val_loader, num_epochs):
+def train(model, optim, schedulers, loss_fn, train_loader, val_loader, num_epochs, device):
     losses = []
     best_val_accuracy = 0
     for epoch in range(num_epochs):
@@ -48,6 +48,10 @@ def train(model, optim, schedulers, loss_fn, train_loader, val_loader, num_epoch
         total = 0
 
         for inputs, labels in train_loader:
+            # Move data to device
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+            
             optim.zero_grad()
             outputs = model(inputs)
             loss = loss_fn(outputs, labels)
@@ -78,6 +82,10 @@ def train(model, optim, schedulers, loss_fn, train_loader, val_loader, num_epoch
 
         with torch.no_grad():
             for inputs, labels in val_loader:
+                # Move data to device
+                inputs = inputs.to(device)
+                labels = labels.to(device)
+                
                 outputs = model(inputs)
                 loss = loss_fn(outputs, labels)
 
@@ -148,7 +156,7 @@ def main():
     wandb.watch(model, log="all")
     
     # Train the model
-    train(model, optimizer, schedulers, loss_fn, train_loader, val_loader, train_config.epochs)
+    train(model, optimizer, schedulers, loss_fn, train_loader, val_loader, train_config.epochs, device)
     
     # Finish wandb run
     wandb.finish()
