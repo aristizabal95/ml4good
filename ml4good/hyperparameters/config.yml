@@ -1,0 +1,22 @@
+# Training Parameters
+batch_size: 124
+epochs: 15
+learning_rate: 0.6448821056769312
+weight_decay: 0.0001
+lr_decay: 0.39993704525420193
+dropout: 0.5
+augmentations:
+  flip: 1
+  translate: 10
+
+# Evaluation Parameters
+eval_steps: 200
+
+# Network Config
+widths:
+  block1: 125
+  block2: 73
+  block3: 113
+
+batchnorm_momentum: 0.4272546065646991
+scaling_factor: 0.10412930566718265
