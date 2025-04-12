@@ -134,8 +134,8 @@ def main():
 
     model = make_net93(net_config.widths, net_config.batchnorm_momentum, net_config.scaling_factor)
     # Create data loaders
-    train_loader = CifarLoader(DATASET_DIR, train=True, batch_size=train_config.batch_size, aug=train_config.augmentations)
-    val_loader = CifarLoader(DATASET_DIR, train=False, batch_size=train_config.batch_size, aug=train_config.augmentations)
+    train_loader = CifarLoader(DATASET_DIR, train=True, batch_size=train_config.batch_size, aug=train_config.augmentations, device=device)
+    val_loader = CifarLoader(DATASET_DIR, train=False, batch_size=train_config.batch_size, aug=train_config.augmentations, device=device)
     # Define loss function and optimizer
     loss_fn = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=train_config.learning_rate, weight_decay=train_config.weight_decay)

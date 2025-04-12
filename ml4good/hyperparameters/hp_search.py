@@ -56,8 +56,8 @@ def objective(trial):
     wandb.log(trial_params)
 
     model = make_net93(widths, batchnorm_momentum, scaling_factor)
-    train_loader = CifarLoader(DATASET_DIR, train=True, batch_size=batch_size, aug=augmentations)
-    val_loader = CifarLoader(DATASET_DIR, train=False, batch_size=batch_size, aug=augmentations)
+    train_loader = CifarLoader(DATASET_DIR, train=True, batch_size=batch_size, aug=augmentations, device=device)
+    val_loader = CifarLoader(DATASET_DIR, train=False, batch_size=batch_size, aug=augmentations, device=device)
     # Define loss function and optimizer
     loss_fn = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
